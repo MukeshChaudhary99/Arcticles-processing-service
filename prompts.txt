@@ -1,0 +1,71 @@
+Act a senior backend service architecture and implementation speciality to implement a backend service in python, fastapi , sqlchemy (use aysnc driver and library) apply db session handling concept of connection pulling . for this purpose work with postgress i have already locally configured.
+python version 3.12. 
+Usage of  pydantic for payload validation.
+Apply the desing pattern of reporsitory making for this crud operation and based classed of layer architecture of controller, model, services and repo.
+Create a model to store article tenancy wise. use a mpper table to map article with tenant .
+id	Primary key (integer or UUID)
+company_name	String, required
+title	String, required
+url	String, unique
+content	Text
+status	Pending / Processing / Completed / Failed
+category	Nullable string
+
+
+for storing status instead of using enum based contraint use a seperate table code_master (id, group_name,value) 
+use setting and contants .py to hold configuration.
+alsong with this implement logging with custom format of injection request_id and url path from middleware.
+go throught the as checkpoint and ask me where any changes in architecture is need and not properly alligning with production grade system
+
+
+
+------------------------------------------------------------------
+
+continue from the phase where i intrupted
+
+------------------------------------------------------------------
+
+Codes changes : use method based endpoints and create two end points
+- Use suitable types and constraints. The URL should be unique to prevent duplicate article records.
+- Implement POST /articles to create an article.
+- Implement GET /articles with pagination and optional company_name and status filters.
+here for pagination use that cursor based pagination based on last id.
+create a pydantic model for payload of post.
+create a company model to refer company_id to name and fk to articles.
+follow the project modulur structure to have code structure in its specific layer.
+avoid the over enginnering of code implementation. focus or reliable solution over complexiity and better maintainanblility with those design patthern.
+i will test the code my self in manual phase verification.
+
+------------------------------------------------------------------
+
+here not need to check that tenant exist in post api and take tenant_id in payload itself as of now. work on implementation of this only.
+
+------------------------------------------------------------------
+
+status_groupconsider tenant id as integery column and other pk too.
+use incremantal pk for db tables.
+remove this its seem unneedfull in arctile model
+create sql queires in file to get ready with 3 tenenat and status code master entry and few articles.
+
+------------------------------------------------------------------
+
+create requesitment .txt also include celery, redis for it in dependency based on python3.12.
+
+------------------------------------------------------------------
+
+consider tenant id as integery column and other pk too.
+use incremantal pk for db tables.
+
+------------------------------------------------------------------
+
+in @main.py add uvicorn startup code in main check such that i can startup my fastapi using python app/main.py like wise. and review the [requirements.txt](requirements.txt)  in sandbox to the the apllication startup.
+
+
+------------------------------------------------------------------
+
+
+
+------------------------------------------------------------------
+
+
+
