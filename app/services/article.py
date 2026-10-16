@@ -120,6 +120,7 @@ class ArticleService:
         article.status_id = constants.ArticleStatus.PROCESSING
         await self.repo.session.flush()
 
-        process_article_task.delay(article_id)
+        task = process_article_task.send_task(article_id)
+        return {'data': {'task_id': task.id, 'status': 'success', 'message': 'Article processing started.'}}
         
         

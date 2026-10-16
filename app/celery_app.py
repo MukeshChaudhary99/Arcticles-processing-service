@@ -19,3 +19,24 @@ celery.conf.update(
     “schedule”: 30.0
     }}
 )
+
+
+from celery.signals import worker_process_init
+
+@worker_process_init.connect()
+def setup_db_connection(**kwargs):
+
+    # ai suggeested to use async session for celery tasks, so we will create a new session factory for each worker process
+    from app.db.session import engine
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy.orm import sessionmaker
+
+    # Create a new session factory for each worker process
+    SessionLocal = sessionmaker(
+        bind=engine, class_=AsyncSession, expire_on_commit=False
+    )
+    # Store the session factory in the Celery app's context
+    celery.db = SessionLocal
+
+
+# @workder_process_shutdown // close of db connection

@@ -27,9 +27,9 @@ async def list_articles(
 ) -> ArticlePage:
     return await service.list(tenant_id, limit, last_id, company_name, status)
 
-@rounter.post("/process", status_code=202)
+@router.post("/{article_id}/process", status_code=202)
 async def process_article(
     service: Service,
     article_id: Annotated[int, Query(gt=0, le=2_147_483_647)],
 ) -> None:
-    await service._process_article(tenant_id, article_id)
+    return await service._process_article(article_id)
