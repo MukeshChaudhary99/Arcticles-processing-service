@@ -36,3 +36,5 @@ async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
     # Closing the session rolls back any uncommitted transaction and returns its connection.
     async with request.app.state.database.sessions() as session:
         yield session
+
+async def db_for_celery()

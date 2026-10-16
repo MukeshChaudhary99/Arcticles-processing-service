@@ -25,3 +25,5 @@ def get_article_service(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ArticleService:
     return ArticleService(ArticleRepository(session), CompanyRepository(session))
+
+

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import ARTICLE_STATUS_GROUP
@@ -51,3 +51,25 @@ class ArticleRepository:
         await self.session.flush()
         self.session.add(TenantArticle(tenant_id=tenant_id, article_id=article.id))
         await self.session.flush()
+
+
+    async def get_pending_articles(
+        self,
+    ):
+        query = (
+            select(Article.title, Article.url, Company.name, Article.content)
+            .join(CodeMaster, CodeMaster.id == Article.status_id)
+        ).where(CodeMaster.value == "Pending")
+        for article in (
+            await self.session.execute(query.order_by(desc(Article.created_at)))
+        ).all():
+            yield article
+    
+    async def update_status(self, article_id: int, status_id: int) -> None:
+        article = await self.session.get(Article, article_id)
+        if article is not None:
+            article.status_id = status_id
+            await self.session.flush()
+
+    async def get_article_by_id(self, article_id: int) -> Article | None:
+        return await self.session.get(Article, article_id).with_for_update()

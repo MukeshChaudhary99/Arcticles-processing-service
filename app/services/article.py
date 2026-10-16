@@ -1,10 +1,14 @@
 from sqlalchemy.exc import IntegrityError
 
+from app import celery_app
+from app.core import constants
 from app.core.errors import ServiceError
 from app.models.entities import Article
 from app.repositories.article import ArticleRepository
 from app.repositories.company import CompanyRepository
 from app.schemas.article import ArticleCreate, ArticlePage, ArticleRead
+from app.services.processing import ArticleProcessor, SimpleArticleClassifier, SimpleArticleSummerizer
+from app.services.tasks import process_article_task
 
 
 class ArticleService:
@@ -88,3 +92,34 @@ class ArticleService:
             items=items,
             next_cursor=items[-1].id if len(rows) > limit else None,
         )
+    
+    async def _process_article(self, article):
+
+        processor = ArticleProcessor(
+            classifier=SimpleArticleClassifier(),
+            summerizer=SimpleArticleSummerizer())
+        
+
+        with self.repo.session.begin():
+            # planing to implement a status update to "Processing" before processing the article with also addling lock to db to avoid same row process multiple times by different workers
+            article.status_id = constants.ArticleStatus.PROCESSING
+
+            category, summary = await processor.process(article)
+
+            status_id = constants.ArticleStatus.COMPLETED
+            article.category = category
+            article.content = summary
+            article.status_id = status_id
+            await self.repo.session.flush()
+
+
+    async def process_given_article(self, article_id: int) -> None:
+        article = await self.repo.get_article_by_id(article_id)
+        if article is None:
+            raise ServiceError(404, "Article not found")
+        article.status_id = constants.ArticleStatus.PROCESSING
+        await self.repo.session.flush()
+
+        process_article_task.delay(article_id)
+        
+        
